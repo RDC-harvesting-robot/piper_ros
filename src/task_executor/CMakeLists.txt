@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.8)
+project(task_executor)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# 必要なパッケージの検索
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
+find_package(geometry_msgs REQUIRED)  # 追加（重要）
+
+# 実行ファイルのビルド
+add_executable(demo_arm_control src/demo_arm_control.cpp)
+ament_target_dependencies(
+  demo_arm_control
+  rclcpp
+  moveit_ros_planning_interface
+  geometry_msgs  # 追加（重要）
+)
+
+add_executable(target_position_pub src/target_position_pub.cpp)
+ament_target_dependencies(
+  target_position_pub
+  rclcpp
+  geometry_msgs
+)
+
+# インストール設定
+install(TARGETS
+  demo_arm_control
+  target_position_pub
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# テスト設定（必要なら）
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()

@@ -1,6 +1,7 @@
 # This config file is used by ros2_control
 controller_manager:
   ros__parameters:
+    use_sim_time: true
     update_rate: 500  # Hz
 
     arm_controller:
