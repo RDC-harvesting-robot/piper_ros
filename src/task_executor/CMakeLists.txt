@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)  # 追加（重要）
 
 # 実行ファイルのビルド
@@ -17,6 +18,7 @@ ament_target_dependencies(
   demo_arm_control
   rclcpp
   moveit_ros_planning_interface
+  std_msgs
   geometry_msgs  # 追加（重要）
 )
 

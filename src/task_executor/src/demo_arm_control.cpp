@@ -1,17 +1,17 @@
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/move_group_interface/move_group_interface.h>
-#include <geometry_msgs/msg/point.hpp>
+#include <std_msgs/msg/int32_multi_array.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
-geometry_msgs::msg::Point latest_target_position;
+std_msgs::msg::Int32MultiArray latest_target_position;
 bool received_target_position = false;
 
-void targetPositionCallback(const geometry_msgs::msg::Point::SharedPtr msg)
+void targetPositionCallback(const std_msgs::msg::Int32MultiArray::SharedPtr msg)
 {
   latest_target_position = *msg;
   received_target_position = true;
-  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "Received: [%.3f, %.3f, %.3f]",
-              latest_target_position.x, latest_target_position.y, latest_target_position.z);
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "Received: [%d, %d, %d]",
+              latest_target_position.data[0], latest_target_position.data[1], latest_target_position.data[2]);
 }
 
 int main(int argc, char** argv)
@@ -35,8 +35,8 @@ int main(int argc, char** argv)
   geometry_msgs::msg::Pose target_pose = move_group_arm.getCurrentPose().pose;
 
   // トピックのサブスクライブ設定
-  auto subscription = node->create_subscription<geometry_msgs::msg::Point>(
-      "target_position", 10, targetPositionCallback);
+  auto subscription = node->create_subscription<std_msgs::msg::Int32MultiArray>(
+      "/crop_cordinate", 10, targetPositionCallback);
 
   // --------------------------------arm control-------------------------------------
 
@@ -52,20 +52,30 @@ int main(int argc, char** argv)
   RCLCPP_INFO(node->get_logger(), "Waiting for target position...");
   while (rclcpp::ok() && !received_target_position) {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
-    target_pose.position.y = 0.1;
-    move_group_arm.setPoseTarget(target_pose);
-    move_group_arm.move();
-    target_pose.position.y = -0.1;
-    move_group_arm.setPoseTarget(target_pose);
-    move_group_arm.move();
+    target_pose =  move_group_arm.getCurrentPose().pose;
+    RCLCPP_INFO(node->get_logger(), "Current pose: x=%.3f y=%.3f z=%.3f",
+                target_pose.position.x,
+                target_pose.position.y,
+                target_pose.position.z);
   }
-  target_pose = move_group_arm.getCurrentPose().pose;
-  target_pose.position.x = latest_target_position.x;
-  target_pose.position.y = latest_target_position.y;
-  target_pose.position.z = latest_target_position.z;
 
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
+  target_pose.position.x , target_pose.position.y, target_pose.position.z);
+
+  target_pose = move_group_arm.getCurrentPose().pose;
+  target_pose.position.x += latest_target_position.data[2]*0.001;
+  target_pose.position.y += latest_target_position.data[0]*0.001;
+  target_pose.position.z += latest_target_position.data[1]*0.001*-1;
   move_group_arm.setPoseTarget(target_pose);
 
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
+  target_pose.position.x , target_pose.position.y, target_pose.position.z);
+
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "TRGET POSE !!!!: x=%.3f y=%.3f z=%.3f",
+  target_pose.position.x,
+  target_pose.position.y,
+  target_pose.position.z);
+  
   moveit::planning_interface::MoveGroupInterface::Plan plan;
   if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
     move_group_arm.execute(plan);
@@ -78,7 +88,8 @@ int main(int argc, char** argv)
 
   move_group_arm.setNamedTarget("set");
   move_group_arm.move();
-
+  move_group_arm.setNamedTarget("zero");
+  move_group_arm.move();
   // --------------------------------arm control-------------------------------------
 
   // 終了処理

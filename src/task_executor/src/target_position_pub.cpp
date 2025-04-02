@@ -1,12 +1,12 @@
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/point.hpp>
+#include <std_msgs/msg/int32_multi_array.hpp>
 
 class TargetPublisherNode : public rclcpp::Node
 {
 public:
   TargetPublisherNode() : Node("target_position_pub")
   {
-    publisher_ = this->create_publisher<geometry_msgs::msg::Point>("target_position", 50);
+    publisher_ = this->create_publisher<std_msgs::msg::Int32MultiArray>("target_position", 500);
     timer_ = this->create_wall_timer(std::chrono::seconds(2),
                                      std::bind(&TargetPublisherNode::timer_callback, this));
   }
@@ -14,16 +14,17 @@ public:
 private:
   void timer_callback()
   {
-    auto message = geometry_msgs::msg::Point();
-    message.x = 0.25; // 任意の目標値を設定
-    message.y = 0.05;
-    message.z = 0.2;
+    auto message = std_msgs::msg::Int32MultiArray();
 
-    RCLCPP_INFO(this->get_logger(), "Publishing: [%.3f, %.3f, %.3f]", message.x, message.y, message.z);
+    // 任意の目標値を設定
+    message.data = {200, 0, 0};
+
+    RCLCPP_INFO(this->get_logger(), "Publishing: [%d, %d, %d]", 
+                message.data[0], message.data[1], message.data[2]);
     publisher_->publish(message);
   }
 
-  rclcpp::Publisher<geometry_msgs::msg::Point>::SharedPtr publisher_;
+  rclcpp::Publisher<std_msgs::msg::Int32MultiArray>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 

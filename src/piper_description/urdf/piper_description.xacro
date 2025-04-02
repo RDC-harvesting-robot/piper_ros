@@ -321,7 +321,7 @@
     type="revolute">
     <origin
       xyz="8.8259E-05 -0.091 0"
-      rpy="1.5708 0 0" />
+      rpy="1.5708 0.374 0" />
     <parent
       link="link5" />
     <child
