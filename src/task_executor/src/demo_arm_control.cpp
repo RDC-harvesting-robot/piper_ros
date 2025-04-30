@@ -5,13 +5,40 @@
 
 std_msgs::msg::Int32MultiArray latest_target_position;
 bool received_target_position = false;
+bool target_within_threshold = false;
 
+// === コールバック関数 ===
 void targetPositionCallback(const std_msgs::msg::Int32MultiArray::SharedPtr msg)
 {
   latest_target_position = *msg;
+
+  // ★ここでしきい値判定
+  int threshold_target_x = 1000;
+  int threshold_target_y = 1000;
+  int threshold_target_z = 1000;
+  int threshold_target_x_low = 10;
+  int threshold_target_y_low = 10;
+  int threshold_target_z_low = 10;
+  if (std::abs(latest_target_position.data[0]) <= threshold_target_y &&
+      std::abs(latest_target_position.data[1]) <= threshold_target_z &&
+      std::abs(latest_target_position.data[2]) <= threshold_target_x)
+  {
+    if (std::abs(latest_target_position.data[0]) >= threshold_target_y_low ||
+        std::abs(latest_target_position.data[1]) >= threshold_target_z_low ||
+        std::abs(latest_target_position.data[2]) >= threshold_target_x_low){
+      target_within_threshold = true;
+      RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "Accepted target: [%d, %d, %d]",
+                  latest_target_position.data[0], latest_target_position.data[1], latest_target_position.data[2]);
+    }
+  }
+  else
+  {
+    target_within_threshold = false;
+    RCLCPP_WARN(rclcpp::get_logger("demo_arm_control"), "Rejected target (out of threshold): [%d, %d, %d]",
+                latest_target_position.data[0], latest_target_position.data[1], latest_target_position.data[2]);
+  }
+
   received_target_position = true;
-  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "Received: [%d, %d, %d]",
-              latest_target_position.data[0], latest_target_position.data[1], latest_target_position.data[2]);
 }
 
 int main(int argc, char** argv)
@@ -36,7 +63,7 @@ int main(int argc, char** argv)
 
   // トピックのサブスクライブ設定
   auto subscription = node->create_subscription<std_msgs::msg::Int32MultiArray>(
-      "/crop_cordinate", 10, targetPositionCallback);
+      "/crop_cordinate", 1, targetPositionCallback);
 
   // --------------------------------arm control-------------------------------------
 
@@ -50,7 +77,7 @@ int main(int argc, char** argv)
   // 目標位置を受信するまで待機
   target_pose =  move_group_arm.getCurrentPose().pose;
   RCLCPP_INFO(node->get_logger(), "Waiting for target position...");
-  while (rclcpp::ok() && !received_target_position) {
+  while (rclcpp::ok() && !received_target_position || !target_within_threshold) {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
     target_pose =  move_group_arm.getCurrentPose().pose;
     RCLCPP_INFO(node->get_logger(), "Current pose: x=%.3f y=%.3f z=%.3f",
@@ -63,9 +90,17 @@ int main(int argc, char** argv)
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
 
   target_pose = move_group_arm.getCurrentPose().pose;
-  target_pose.position.x += latest_target_position.data[2]*0.001;
-  target_pose.position.y += latest_target_position.data[0]*0.001;
-  target_pose.position.z += latest_target_position.data[1]*0.001*-1;
+  // float target_x = latest_target_position.data[2];
+  float target_x = latest_target_position.data[2]*0.001;
+  float target_y = latest_target_position.data[0]*0.001;
+  float target_z = latest_target_position.data[1]*0.001;
+  target_pose.position.x += target_x;
+  target_pose.position.y += 0;
+  target_pose.position.z += 0;
+  // target_pose.position.y += target_y*0.001;
+  // target_pose.position.z += target_z*0.001*-1;
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITION: [%f]", target_x);
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%f]", latest_target_position.data[2]);
   move_group_arm.setPoseTarget(target_pose);
 
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
@@ -75,7 +110,7 @@ int main(int argc, char** argv)
   target_pose.position.x,
   target_pose.position.y,
   target_pose.position.z);
-  
+
   moveit::planning_interface::MoveGroupInterface::Plan plan;
   if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
     move_group_arm.execute(plan);
