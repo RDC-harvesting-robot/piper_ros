@@ -10,7 +10,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)  # 追加（重要）
+find_package(geometry_msgs REQUIRED)
+find_package(example_interfaces REQUIRED)
 
 # 実行ファイルのビルド
 add_executable(demo_arm_control src/demo_arm_control.cpp)
@@ -19,8 +20,22 @@ ament_target_dependencies(
   rclcpp
   moveit_ros_planning_interface
   std_msgs
-  geometry_msgs  # 追加（重要）
+  geometry_msgs
 )
+
+add_executable(ee_demo_arm_control src/ee_demo_arm_control.cpp)
+ament_target_dependencies(
+  ee_demo_arm_control
+  example_interfaces
+  rclcpp
+  moveit_ros_planning_interface
+  std_msgs
+  geometry_msgs
+)
+
+add_executable(pose_set_client src/pose_set_client.cpp)
+ament_target_dependencies(pose_set_client rclcpp example_interfaces)
+install(TARGETS pose_set_client DESTINATION lib/${PROJECT_NAME})
 
 add_executable(target_position_pub src/target_position_pub.cpp)
 ament_target_dependencies(
@@ -32,6 +47,7 @@ ament_target_dependencies(
 # インストール設定
 install(TARGETS
   demo_arm_control
+  ee_demo_arm_control
   target_position_pub
   DESTINATION lib/${PROJECT_NAME}
 )
