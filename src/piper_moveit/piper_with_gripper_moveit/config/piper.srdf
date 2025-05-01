@@ -32,6 +32,14 @@
         <joint name="joint5" value="0.8242436788439098"/>
         <joint name="joint6" value="0.37395936064547131246"/>
     </group_state>
+    <group_state name="hr_demo_set" group="arm">
+        <joint name="joint1" value="0.2626495241217374"/>
+        <joint name="joint2" value="1.2926133873549017"/>
+        <joint name="joint3" value="-0.43761339111874653"/>
+        <joint name="joint4" value="0.36879076955700263"/>
+        <joint name="joint5" value="-0.8039415527095845"/>
+        <joint name="joint6" value="0.11162945673263779"/>
+    </group_state>
     <group_state name="open" group="gripper">
         <joint name="joint7" value="0.035"/>
     </group_state>

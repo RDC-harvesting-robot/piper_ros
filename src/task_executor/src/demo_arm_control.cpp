@@ -71,8 +71,11 @@ int main(int argc, char** argv)
   move_group_arm.move();
   move_group_gripper.setNamedTarget("open");
   move_group_gripper.move();
-  move_group_arm.setNamedTarget("set");
+  move_group_arm.setNamedTarget("hr_demo_set");
   move_group_arm.move();
+
+  rclcpp::sleep_for(std::chrono::milliseconds(1000));
+
 
   // 目標位置を受信するまで待機
   target_pose =  move_group_arm.getCurrentPose().pose;
@@ -91,15 +94,13 @@ int main(int argc, char** argv)
 
   target_pose = move_group_arm.getCurrentPose().pose;
   // float target_x = latest_target_position.data[2];
-  float target_x = latest_target_position.data[2]*0.001;
-  float target_y = latest_target_position.data[0]*0.001;
-  float target_z = latest_target_position.data[1]*0.001;
-  target_pose.position.x += target_x;
+  float target_x = latest_target_position.data[2]*0.001; // 前後
+  float target_y = latest_target_position.data[0]*0.001*-1; // 左右
+  float target_z = latest_target_position.data[1]*0.001; // 上下
+  target_pose.position.x += 0;
   target_pose.position.y += 0;
-  target_pose.position.z += 0;
-  // target_pose.position.y += target_y*0.001;
-  // target_pose.position.z += target_z*0.001*-1;
-  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITION: [%f]", target_x);
+  target_pose.position.z += target_z;
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITION: [%f]", target_z);
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%f]", latest_target_position.data[2]);
   move_group_arm.setPoseTarget(target_pose);
 
@@ -118,10 +119,27 @@ int main(int argc, char** argv)
     RCLCPP_WARN(node->get_logger(), "Planning failed.");
   }
 
+  rclcpp::sleep_for(std::chrono::milliseconds(1000));
+
+  target_pose = move_group_arm.getCurrentPose().pose;
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
+  target_pose.position.x , target_pose.position.y, target_pose.position.z);
+  target_pose.position.x += target_x;
+  target_pose.position.y += 0;
+  target_pose.position.z += 0;
+  move_group_arm.setPoseTarget(target_pose);
+  if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
+    move_group_arm.execute(plan);
+  } else {
+    RCLCPP_WARN(node->get_logger(), "Planning failed.");
+  }
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
+  target_pose.position.x , target_pose.position.y, target_pose.position.z);
+
   move_group_gripper.setNamedTarget("close");
   move_group_gripper.move();
 
-  move_group_arm.setNamedTarget("set");
+  move_group_arm.setNamedTarget("hr_demo_set");
   move_group_arm.move();
   move_group_arm.setNamedTarget("zero");
   move_group_arm.move();
