@@ -1,5 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
-#include "example_interfaces/srv/pose_set.hpp"  // ここは正しいsrvパスに変更してください
+#include "example_interfaces/srv/pose_set.hpp"
 
 int main(int argc, char **argv)
 {

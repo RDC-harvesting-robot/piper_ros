@@ -94,14 +94,17 @@ int main(int argc, char** argv)
 
   target_pose = move_group_arm.getCurrentPose().pose;
   // float target_x = latest_target_position.data[2];
+  // float target_x = latest_target_position.data[2]*0.001; // 前後
+  // float target_y = latest_target_position.data[0]*0.001*-1; // 左右
+  // float target_z = latest_target_position.data[1]*0.001; // 上下
   float target_x = latest_target_position.data[2]*0.001; // 前後
-  float target_y = latest_target_position.data[0]*0.001*-1; // 左右
-  float target_z = latest_target_position.data[1]*0.001; // 上下
+  float target_y = latest_target_position.data[1]*0.001*-1; // 左右
+  float target_z = latest_target_position.data[0]*0.001*-1; // 上下
   target_pose.position.x += 0;
   target_pose.position.y += 0;
   target_pose.position.z += target_z;
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITION: [%f]", target_z);
-  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%f]", latest_target_position.data[2]);
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%d]", latest_target_position.data[2]);
   move_group_arm.setPoseTarget(target_pose);
 
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",

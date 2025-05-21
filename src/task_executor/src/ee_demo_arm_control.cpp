@@ -2,7 +2,7 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <std_msgs/msg/int32_multi_array.hpp>
 #include <geometry_msgs/msg/pose.hpp>
-#include "example_interfaces/srv/pose_set.hpp"
+#include <example_interfaces/srv/pose_set.hpp>
 
 std_msgs::msg::Int32MultiArray latest_target_position;
 bool received_target_position = false;
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
   target_pose.position.y += target_y;
   target_pose.position.z += target_z + 0.15;
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITION: [%f]", target_z);
-  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%f]", latest_target_position.data[2]);
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%d]", latest_target_position.data[2]);
   move_group_arm.setPoseTarget(target_pose);
 
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",

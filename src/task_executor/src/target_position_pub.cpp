@@ -17,7 +17,7 @@ private:
     auto message = std_msgs::msg::Int32MultiArray();
 
     // 任意の目標値を設定
-    message.data = {0, 0, 400};
+    message.data = {20, 50, 300};
 
     RCLCPP_INFO(this->get_logger(), "Publishing: [%d, %d, %d]", 
                 message.data[0], message.data[1], message.data[2]);
