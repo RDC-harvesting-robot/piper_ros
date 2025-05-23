@@ -15,7 +15,7 @@ from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("piper", package_name="piper_with_gripper_moveit").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder("piper", package_name="piper_with_gripper_moveit_config").to_moveit_configs()
 
     ld = LaunchDescription()
 

@@ -72,7 +72,7 @@ ros2 launch piper_no_gripper_moveit demo.launch.py
 #### 3.2.2 Run with gripper
 
 ```bash
-ros2 launch piper_with_gripper_moveit demo.launch.py
+ros2 launch piper_with_gripper_moveit_config demo.launch.py
 ```
 
 ![piper_moveit](../../asserts/pictures/piper_moveit.png)
@@ -101,7 +101,7 @@ source install/setup.bash
 Run with gripper:
 
 ```bash
-ros2 launch piper_with_gripper_moveit piper_moveit.launch.py
+ros2 launch piper_with_gripper_moveit_config piper_moveit.launch.py
 ```
 
 Run without gripper:
