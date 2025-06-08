@@ -94,15 +94,17 @@ int main(int argc, char** argv)
 
   target_pose = move_group_arm.getCurrentPose().pose;
   // float target_x = latest_target_position.data[2];
-  // float target_x = latest_target_position.data[2]*0.001; // 前後
-  // float target_y = latest_target_position.data[0]*0.001*-1; // 左右
-  // float target_z = latest_target_position.data[1]*0.001; // 上下
   float target_x = latest_target_position.data[2]*0.001; // 前後
-  float target_y = latest_target_position.data[1]*0.001*-1; // 左右
-  float target_z = latest_target_position.data[0]*0.001*-1; // 上下
+  float target_y = latest_target_position.data[0]*0.001*-1; // 左右
+  float target_z = latest_target_position.data[1]*0.001; // 上下
+  // float target_x = latest_target_position.data[2]*0.001; // 前後
+  // float target_y = latest_target_position.data[1]*0.001*-1; // 左右
+  // float target_z = latest_target_position.data[0]*0.001*-1; // 上下
+  // target_pose.position.x += 0.0;
   target_pose.position.x += 0;
-  target_pose.position.y += 0;
-  target_pose.position.z += target_z + 0.06;
+  target_pose.position.y += target_y;
+  target_pose.position.z += target_z;
+  // target_pose.position.z += target_z + 0.15;
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITION: [%f]", target_z);
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "POSITIONaaaaaaaaaaaaaaa: [%d]", latest_target_position.data[2]);
   move_group_arm.setPoseTarget(target_pose);
@@ -127,7 +129,8 @@ int main(int argc, char** argv)
   target_pose = move_group_arm.getCurrentPose().pose;
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
-  target_pose.position.x += target_x - 0.15;
+  // target_pose.position.x += target_x - 0.2;
+  target_pose.position.x += target_x;
   target_pose.position.y += 0;
   target_pose.position.z += 0;
   move_group_arm.setPoseTarget(target_pose);
