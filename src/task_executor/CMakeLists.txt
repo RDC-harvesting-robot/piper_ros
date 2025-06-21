@@ -13,6 +13,8 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
 
+
+
 # 実行ファイルのビルド
 add_executable(demo_arm_control src/demo_arm_control.cpp)
 ament_target_dependencies(
@@ -42,6 +44,19 @@ ament_target_dependencies(
   target_position_pub
   rclcpp
   geometry_msgs
+)
+
+add_executable(tf_broadcast src/tf_broadcast.cpp)
+ament_target_dependencies(tf_broadcast
+  rclcpp
+  std_msgs
+  tf2_ros
+  geometry_msgs
+)
+
+install(TARGETS
+  tf_broadcast
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 # インストール設定
