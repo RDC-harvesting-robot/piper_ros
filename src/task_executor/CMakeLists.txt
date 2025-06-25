@@ -54,6 +54,18 @@ ament_target_dependencies(tf_broadcast
   geometry_msgs
 )
 
+add_executable(tf_arm_control src/tf_arm_control.cpp)
+ament_target_dependencies(
+  tf_arm_control
+  rclcpp
+  moveit_ros_planning_interface
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  geometry_msgs
+)
+
+
 install(TARGETS
   tf_broadcast
   DESTINATION lib/${PROJECT_NAME}
@@ -66,6 +78,12 @@ install(TARGETS
   target_position_pub
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(TARGETS
+  tf_arm_control
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 
 # テスト設定（必要なら）
 if(BUILD_TESTING)
