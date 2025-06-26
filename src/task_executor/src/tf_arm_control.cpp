@@ -58,11 +58,11 @@ int main(int argc, char **argv)
   RCLCPP_INFO(node->get_logger(), "Target (base_link): x=%.3f y=%.3f z=%.3f", x, y, z);
 
   // 目標位置Poseを作成
-    geometry_msgs::msg::Pose target_pose = move_group_arm.getCurrentPose().pose;  // ★これが重要
+    geometry_msgs::msg::Pose target_pose = move_group_arm.getCurrentPose().pose; 
     target_pose.position.x = transformStamped.transform.translation.x;
     target_pose.position.y = transformStamped.transform.translation.y;
     target_pose.position.z = transformStamped.transform.translation.z;
-// orientation はそのまま
+  // orientation はそのまま
 
   // 目標座標にアプローチ
   move_group_arm.setPoseTarget(target_pose);
