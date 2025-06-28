@@ -501,6 +501,22 @@
       effort="10"
       velocity="1" />
   </joint>
+  <link name="camera_link">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <box size="0.02 0.02 0.02"/> <!-- メッシュでもOK -->
+    </geometry>
+    <material name="blue">
+      <color rgba="0 0 1 1"/>
+    </material>
+  </visual>
+</link>
+<joint name="gripper_to_camera" type="fixed">
+  <origin xyz="-0.04 0 0.04" rpy="0 -1.5708 0"/> <!-- gripper_baseから見たカメラの相対位置 -->
+  <parent link="gripper_base"/>
+  <child link="camera_link"/>
+</joint>
 
 <!-- controller -->
   <xacro:macro name="transmission_block" params="tran_name joint_name motor_name">
