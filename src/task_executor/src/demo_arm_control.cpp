@@ -63,10 +63,14 @@ int main(int argc, char** argv)
   moveit::planning_interface::MoveGroupInterface move_group_gripper(node, "gripper");
   // 現在のポーズを取得して目標位置をセット
   geometry_msgs::msg::Pose target_pose = move_group_arm.getCurrentPose().pose;
+  moveit::planning_interface::MoveGroupInterface::Plan plan;
+  move_group_arm.stop();  // 前回の残留目標を全て破棄
+  move_group_arm.clearPoseTargets();  // 目標姿勢もクリア
+  move_group_arm.setStartStateToCurrentState();  // 現在の状態を再度取得して開始状態に設定
 
   // トピックのサブスクライブ設定
   auto subscription = node->create_subscription<std_msgs::msg::Int32MultiArray>(
-      "/crop_cordinates_creen_selection", 1, targetPositionCallback);
+      "/crop_cordinate", 1, targetPositionCallback);
   
   auto publish_target_position = [&](const geometry_msgs::msg::Pose &pose) {
   target_pose_pub->publish(pose);
@@ -74,19 +78,18 @@ int main(int argc, char** argv)
 
   // --------------------------------arm control-------------------------------------
 
-  move_group_arm.setNamedTarget("zero");
-  move_group_arm.move();
-  move_group_gripper.setNamedTarget("open");
-  move_group_gripper.move();
+  // move_group_arm.setNamedTarget("zero");
+  // move_group_arm.move();
+  // move_group_gripper.setNamedTarget("open");
+  // move_group_gripper.move();
   move_group_arm.setNamedTarget("hr_demo_set");
   move_group_arm.move();
 
   rclcpp::sleep_for(std::chrono::milliseconds(1000));
 
-
   // 目標位置を受信するまで待機
   target_pose =  move_group_arm.getCurrentPose().pose;
-  // RCLCPP_INFO(node->get_logger(), "Waiting for target position...");
+  RCLCPP_INFO(node->get_logger(), "Waiting for target position...");
   while (rclcpp::ok() && !received_target_position || !target_within_threshold) {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
     target_pose =  move_group_arm.getCurrentPose().pose;
@@ -96,26 +99,26 @@ int main(int argc, char** argv)
     //             target_pose.position.z);
   }
 
-  // RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
-  // target_pose.position.x , target_pose.position.y, target_pose.position.z);
-
   target_pose = move_group_arm.getCurrentPose().pose;
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
+  target_pose.position.x , target_pose.position.y, target_pose.position.z);
 
   float target_x = latest_target_position.data[2]*0.001; // 前後
   float target_y = latest_target_position.data[0]*0.001*-1; // 左右
   float target_z = latest_target_position.data[1]*0.001; // 上下
-  // target_pose.position.x += 0.0;
+
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "target各変数の値 target_x, target_y, target_z: [%f, %f, %f]",
+  target_x , target_y, target_z);
+
   target_pose.position.x += 0;
-  target_pose.position.y += target_y;
-  // target_pose.position.z += target_z;
-  target_pose.position.z += target_z + 0.1;
+  target_pose.position.y += target_y + 0.03;
+  target_pose.position.z += target_z + 0.05;
 
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
 
   move_group_arm.setPoseTarget(target_pose);
 
-  moveit::planning_interface::MoveGroupInterface::Plan plan;
   if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
     move_group_arm.execute(plan);
   } else {
@@ -126,16 +129,15 @@ int main(int argc, char** argv)
 
   target_pose = move_group_arm.getCurrentPose().pose;
 
-  // target_pose.position.x += target_x;
-  target_pose.position.x += target_x - 0.2;
+  target_pose.position.x += target_x - 0.25;
   target_pose.position.y += 0;
   target_pose.position.z += 0;
+  publish_target_position(target_pose); //一つ前の動作のチェック・ポイント
 
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
 
   move_group_arm.setPoseTarget(target_pose);
-  publish_target_position(target_pose);
 
   if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
     move_group_arm.execute(plan);
@@ -143,22 +145,45 @@ int main(int argc, char** argv)
     RCLCPP_WARN(node->get_logger(), "Planning failed.");
   }
 
+  target_pose.position.x = 0.25;
+  target_pose.position.y += 0;
+  target_pose.position.z += 0;
+  
+  publish_target_position(target_pose); //一つ前の動作のチェック・ポイント
+RCLCPP_INFO(
+  rclcpp::get_logger("demo_arm_control"),
+  "Pose position: [x=%.3f, y=%.3f, z=%.3f], orientation: [x=%.3f, y=%.3f, z=%.3f, w=%.3f]",
+  target_pose.position.x,
+  target_pose.position.y,
+  target_pose.position.z,
+  target_pose.orientation.x,
+  target_pose.orientation.y,
+  target_pose.orientation.z,
+  target_pose.orientation.w
+);
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!acto!!!!!!!: [%f, %f, %f]",
+  target_pose.position.x , target_pose.position.y, target_pose.position.z);
+
+  move_group_arm.setPoseTarget(target_pose);
+
+  if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
+    move_group_arm.execute(plan);
+  } else {
+    RCLCPP_WARN(node->get_logger(), "Planning failed.");
+  }
+
+
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
-  publish_target_position(target_pose);
-
-  move_group_gripper.setNamedTarget("close");
-  move_group_gripper.move();
 
   move_group_arm.setNamedTarget("hr_demo_set");
-  move_group_arm.move();
-  move_group_arm.setNamedTarget("zero");
   move_group_arm.move();
   // --------------------------------arm control-------------------------------------
 
   // 終了処理
   executor->cancel();
   spinner_thread.join();
+  node.reset();
 
   rclcpp::shutdown();
   return 0;
