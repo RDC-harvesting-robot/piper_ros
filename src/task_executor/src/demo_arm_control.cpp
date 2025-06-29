@@ -2,6 +2,8 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <std_msgs/msg/int32_multi_array.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+# include <iostream>
+# include <chrono>
 
 std_msgs::msg::Int32MultiArray latest_target_position;
 bool received_target_position = false;
@@ -43,6 +45,9 @@ void targetPositionCallback(const std_msgs::msg::Int32MultiArray::SharedPtr msg)
 
 int main(int argc, char** argv)
 {
+  std::chrono::system_clock::time_point  start, end; // 型は auto で可
+  start = std::chrono::system_clock::now(); // 計測開始時間
+
   rclcpp::init(argc, argv);
 
   // ノードの作成
@@ -86,7 +91,7 @@ int main(int argc, char** argv)
   move_group_arm.setNamedTarget("hr_demo_set");
   move_group_arm.move();
 
-  // rclcpp::sleep_for(std::chrono::milliseconds(1000));
+  rclcpp::sleep_for(std::chrono::milliseconds(1000));
 
   // 目標位置を受信するまで待機
   target_pose =  move_group_arm.getCurrentPose().pose;
@@ -158,6 +163,12 @@ int main(int argc, char** argv)
 
   move_group_arm.setNamedTarget("hr_demo_set");
   move_group_arm.move();
+
+
+  end = std::chrono::system_clock::now();  // 計測終了時間
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count(); //処理に要した時間をミリ秒に変換
+
+  RCLCPP_WARN(rclcpp::get_logger("demo_arm_control"), "HARVESTING TIME: [%f]", elapsed);
 
   // --------------------------------arm control-------------------------------------
 
