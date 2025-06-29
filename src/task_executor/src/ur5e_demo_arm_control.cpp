@@ -72,8 +72,7 @@ int main(int argc, char** argv)
 
   {
   // MoveGroupInterface 初期化
-  moveit::planning_interface::MoveGroupInterface move_group_arm(node, "arm");
-  moveit::planning_interface::MoveGroupInterface move_group_gripper(node, "gripper");
+  moveit::planning_interface::MoveGroupInterface move_group_arm(node, "ur_manipulator");
   // 現在のポーズを取得して目標位置をセット
   geometry_msgs::msg::Pose target_pose = move_group_arm.getCurrentPose().pose;
   moveit::planning_interface::MoveGroupInterface::Plan plan;
@@ -93,9 +92,7 @@ int main(int argc, char** argv)
 
   // move_group_arm.setNamedTarget("zero");
   // move_group_arm.move();
-  // move_group_gripper.setNamedTarget("open");
-  // move_group_gripper.move();
-  move_group_arm.setNamedTarget("hr_demo_set");
+  move_group_arm.setNamedTarget("servo_set");
   move_group_arm.move();
 
   rclcpp::sleep_for(std::chrono::milliseconds(1000));
@@ -117,14 +114,23 @@ int main(int argc, char** argv)
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
 
-  float target_x = latest_target_position.data[2]*0.001; // 前後
-  float target_y = latest_target_position.data[0]*0.001*-1; // 左右
+  // float target_x = latest_target_position.data[0]*0.001; // 左右
+  // float target_y = latest_target_position.data[2]*0.001; // 前後
+  // float target_z = latest_target_position.data[1]*0.001; // 上下
+
+  float target_x = latest_target_position.data[0]*0.001; // 左右
+  float target_y = latest_target_position.data[2]*0.001; // 前後
   float target_z = latest_target_position.data[1]*0.001; // 上下
 
-  target_pose.position.x += 0;
-  target_pose.position.y += target_y + 0.03;
-  target_pose.position.z += target_z + 0.1;
   
+  // target_pose.position.x += target_x + 0.03;
+  // target_pose.position.y += 0;
+  // target_pose.position.z += target_z + 0.1;
+
+  target_pose.position.x += target_x; // 0.03
+  target_pose.position.y += 0;
+  target_pose.position.z += target_z; // 0.1
+
   publish_target_position(target_pose);
   move_group_arm.setPoseTarget(target_pose);
 
@@ -138,9 +144,11 @@ int main(int argc, char** argv)
 
   target_pose = move_group_arm.getCurrentPose().pose;
 
-  target_pose.position.x += target_x - 0.25;
-  target_pose.position.y += 0;
+  target_pose.position.x += 0;
+  target_pose.position.y += target_y;
   target_pose.position.z += 0;
+
+
   publish_target_position(target_pose);
 
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
@@ -154,8 +162,8 @@ int main(int argc, char** argv)
     RCLCPP_WARN(node->get_logger(), "Planning failed.");
   }
 
-  target_pose.position.x += -0.25;
-  target_pose.position.y += 0;
+  target_pose.position.x += 0;
+  target_pose.position.y += -0.3;
   target_pose.position.z += 0;
   
   move_group_arm.setPoseTarget(target_pose);
@@ -169,7 +177,7 @@ int main(int argc, char** argv)
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "AFTOR LATEST TARGET POSITION: [%f, %f, %f]",
   target_pose.position.x , target_pose.position.y, target_pose.position.z);
 
-  move_group_arm.setNamedTarget("hr_demo_set");
+  move_group_arm.setNamedTarget("servo_set");
   move_group_arm.move();
 
 

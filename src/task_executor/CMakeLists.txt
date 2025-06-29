@@ -25,6 +25,15 @@ ament_target_dependencies(
   geometry_msgs
 )
 
+add_executable(ur5e_demo_arm_control src/ur5e_demo_arm_control.cpp)
+ament_target_dependencies(
+  ur5e_demo_arm_control
+  rclcpp
+  moveit_ros_planning_interface
+  std_msgs
+  geometry_msgs
+)
+
 add_executable(ee_demo_arm_control src/ee_demo_arm_control.cpp)
 ament_target_dependencies(
   ee_demo_arm_control
@@ -74,6 +83,7 @@ install(TARGETS
 # インストール設定
 install(TARGETS
   demo_arm_control
+  ur5e_demo_arm_control
   ee_demo_arm_control
   target_position_pub
   DESTINATION lib/${PROJECT_NAME}
