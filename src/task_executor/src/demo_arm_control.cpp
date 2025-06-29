@@ -12,6 +12,12 @@ bool target_within_threshold = false;
 // === コールバック関数 ===
 void targetPositionCallback(const std_msgs::msg::Int32MultiArray::SharedPtr msg)
 {
+  if (msg->data.size() != 3) {                 // 要素数チェック
+    // RCLCPP_WARN(rclcpp::get_logger("demo_arm_control"),
+    //             "Unexpected array size: %zu", msg->data.size());
+    return;
+  }
+  
   latest_target_position = *msg;
 
   // ★ここでしきい値判定
@@ -21,10 +27,12 @@ void targetPositionCallback(const std_msgs::msg::Int32MultiArray::SharedPtr msg)
   int threshold_target_x_low = 10;
   int threshold_target_y_low = 10;
   int threshold_target_z_low = 10;
+
   if (std::abs(latest_target_position.data[0]) <= threshold_target_y &&
       std::abs(latest_target_position.data[1]) <= threshold_target_z &&
       std::abs(latest_target_position.data[2]) <= threshold_target_x)
   {
+
     if (std::abs(latest_target_position.data[0]) >= threshold_target_y_low ||
         std::abs(latest_target_position.data[1]) >= threshold_target_z_low ||
         std::abs(latest_target_position.data[2]) >= threshold_target_x_low){
@@ -62,8 +70,7 @@ int main(int argc, char** argv)
   executor->add_node(node);
   std::thread spinner_thread([executor]() { executor->spin(); });
 
-  // rclcpp::spin_some(node);
-{
+  {
   // MoveGroupInterface 初期化
   moveit::planning_interface::MoveGroupInterface move_group_arm(node, "arm");
   moveit::planning_interface::MoveGroupInterface move_group_gripper(node, "gripper");
@@ -98,12 +105,13 @@ int main(int argc, char** argv)
   RCLCPP_INFO(node->get_logger(), "Waiting for target position...");
   while (rclcpp::ok() && !received_target_position || !target_within_threshold) {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
-    target_pose =  move_group_arm.getCurrentPose().pose;
+    // target_pose =  move_group_arm.getCurrentPose().pose;
     // RCLCPP_INFO(node->get_logger(), "Current pose: x=%.3f y=%.3f z=%.3f",
     //             target_pose.position.x,
     //             target_pose.position.y,
     //             target_pose.position.z);
   }
+  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "(((((((((((())))))))))))");
 
   target_pose = move_group_arm.getCurrentPose().pose;
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
