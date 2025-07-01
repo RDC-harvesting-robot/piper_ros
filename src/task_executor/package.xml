@@ -17,6 +17,8 @@
   <depend>moveit_ros_planning_interface</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
+  <!-- <depend>cv_bridge</depend>
+  <depend>opencv</depend> -->
 
   <export>
     <build_type>ament_cmake</build_type>

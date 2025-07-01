@@ -2,8 +2,9 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <std_msgs/msg/int32_multi_array.hpp>
 #include <geometry_msgs/msg/pose.hpp>
-# include <iostream>
-# include <chrono>
+#include <sensor_msgs/msg/image.hpp>
+#include <iostream>
+#include <chrono>
 
 std_msgs::msg::Int32MultiArray latest_target_position;
 bool received_target_position = false;
@@ -64,7 +65,8 @@ int main(int argc, char** argv)
   auto node = std::make_shared<rclcpp::Node>("demo_arm_control", node_options);
   // アームの目標座標を公開
   auto target_pose_pub = node->create_publisher<geometry_msgs::msg::Pose>("/target_pose_xyz", 1);
-
+  // // 画像を１回だけ公開
+  // auto bbox_pub = node->create_publisher<sensor_msgs::msg::Image>("/bbox_image_2", 1);
   // 別スレッドでspinを開始
   auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   executor->add_node(node);
@@ -105,13 +107,13 @@ int main(int argc, char** argv)
   RCLCPP_INFO(node->get_logger(), "Waiting for target position...");
   while (rclcpp::ok() && !received_target_position || !target_within_threshold) {
     rclcpp::sleep_for(std::chrono::milliseconds(100));
+
     // target_pose =  move_group_arm.getCurrentPose().pose;
     // RCLCPP_INFO(node->get_logger(), "Current pose: x=%.3f y=%.3f z=%.3f",
     //             target_pose.position.x,
     //             target_pose.position.y,
     //             target_pose.position.z);
   }
-  RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "(((((((((((())))))))))))");
 
   target_pose = move_group_arm.getCurrentPose().pose;
   RCLCPP_INFO(rclcpp::get_logger("demo_arm_control"), "BEFORE LATEST TARGET POSITION: [%f, %f, %f]",
@@ -123,7 +125,7 @@ int main(int argc, char** argv)
 
   target_pose.position.x += 0;
   target_pose.position.y += target_y + 0.03;
-  target_pose.position.z += target_z + 0.1;
+  target_pose.position.z += target_z + 0.08;
   
   publish_target_position(target_pose);
   move_group_arm.setPoseTarget(target_pose);
@@ -138,7 +140,7 @@ int main(int argc, char** argv)
 
   target_pose = move_group_arm.getCurrentPose().pose;
 
-  target_pose.position.x += target_x - 0.25;
+  target_pose.position.x += target_x - 0.20;
   target_pose.position.y += 0;
   target_pose.position.z += 0;
   publish_target_position(target_pose);
@@ -154,7 +156,7 @@ int main(int argc, char** argv)
     RCLCPP_WARN(node->get_logger(), "Planning failed.");
   }
 
-  target_pose.position.x += -0.25;
+  target_pose.position.x = -0.15;
   target_pose.position.y += 0;
   target_pose.position.z += 0;
   
@@ -171,6 +173,8 @@ int main(int argc, char** argv)
 
   move_group_arm.setNamedTarget("hr_demo_set");
   move_group_arm.move();
+  // move_group_arm.setNamedTarget("zero");
+  // move_group_arm.move();
 
 
   end = std::chrono::system_clock::now();  // 計測終了時間
