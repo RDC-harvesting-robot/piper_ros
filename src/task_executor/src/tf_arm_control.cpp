@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   rclcpp::sleep_for(std::chrono::seconds(1));  // 安定待ち
 
   // === camera_link → gripper_base → target_object の静的TFをブロードキャスト ===
-  // ※この部分はlaunchファイルやコマンドラインで実行する必要あり。
+  // ※この部分はlaunchファイルやコマンドラインで実行する必要あり。->tf_broadcast.cpp
   // ros2 run tf2_ros static_transform_publisher -0.03 0.02 0 1.5708 -1.5708 0 gripper_base camera_link
 
   // === TFからtarget_object位置取得 ===
@@ -86,6 +86,7 @@ int main(int argc, char **argv)
   rclcpp::sleep_for(std::chrono::seconds(1));
 
   // === 把持（必要に応じて） ===
+  // 正直これは趣味で追加したものなので適宜変更してください
   move_group_gripper.setNamedTarget("close");
   move_group_gripper.move();
 
