@@ -2,13 +2,14 @@
 <robot
   name="piper"
   xmlns:xacro="http://ros.org/wiki/xacro">
-<!-- world -->
-  <link name="world"/>
+
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro" />
+
+<link name="world"/>
   <joint name="fixed_base_joint" type="fixed">
       <parent link="world"/>
       <child link="base_link"/>
   </joint>
-<!-- arm -->
 <link
     name="base_link">
     <inertial>
@@ -501,25 +502,15 @@
       effort="10"
       velocity="1" />
   </joint>
-  <link name="camera_link">
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <box size="0.02 0.02 0.02"/> <!-- メッシュでもOK -->
-    </geometry>
-    <material name="blue">
-      <color rgba="0 0 1 1"/>
-    </material>
-  </visual>
-</link>
-<joint name="gripper_to_camera" type="fixed">
-  <origin xyz="-0.04 0 0.04" rpy="0 -1.5708 0"/> <!-- gripper_baseから見たカメラの相対位置 -->
-  <parent link="gripper_base"/>
-  <child link="camera_link"/>
-</joint>
+<xacro:sensor_d435 parent="gripper_base" name="camera">
+  <origin xyz="-0.08 0 0.04" rpy="0 -1.5708 0"/>
+  <xacro:arg name="use_nominal_extrinsics" default="false" />
+  <xacro:if value="$(arg use_nominal_extrinsics)">
+    <arg name="use_nominal_extrinsics" value="true" />
+  </xacro:if>
+</xacro:sensor_d435>
 
-<!-- controller -->
-  <xacro:macro name="transmission_block" params="tran_name joint_name motor_name">
+<xacro:macro name="transmission_block" params="tran_name joint_name motor_name">
     <transmission name="${tran_name}">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="${joint_name}">
@@ -540,48 +531,11 @@
   <xacro:transmission_block tran_name="tran6" joint_name="joint6" motor_name="motor6"/>
   <xacro:transmission_block tran_name="tran7" joint_name="joint7" motor_name="motor7"/>
   <xacro:transmission_block tran_name="tran8" joint_name="joint8" motor_name="motor8"/>
-<!-- gazebo -->
-  <gazebo>
+<gazebo>
     <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
         <robotNamespace>/piper</robotNamespace>
         <parameters> $(find piper_gazebo)/config/ros2_controllers.yaml </parameters>
         <legacyModeNS>true</legacyModeNS>
     </plugin>
   </gazebo>
- 
-  <!-- <gazebo reference="base_link">
-    <material>Gazebo/Black</material>
-  </gazebo>
-
-  <gazebo reference="link1">
-    <material>Gazebo/White</material>
-  </gazebo>
- 
-  <gazebo reference="link2">
-    <material>Gazebo/White</material>
-  </gazebo>
-
-  <gazebo reference="link3">
-    <material>Gazebo/White</material>
-  </gazebo>
- 
-  <gazebo reference="link4">
-    <material>Gazebo/Black</material>
-  </gazebo>
- 
-  <gazebo reference="link5">
-    <material>Gazebo/White</material>
-  </gazebo>
- 
-  <gazebo reference="link6">
-    <material>Gazebo/White</material>
-  </gazebo>
- 
-  <gazebo reference="link7">
-    <material>Gazebo/Orange</material>
-  </gazebo>
- 
-  <gazebo reference="link8">
-    <material>Gazebo/Orange</material>
-  </gazebo> -->
 </robot>
