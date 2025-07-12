@@ -29,8 +29,8 @@ private:
     transformStamped.child_frame_id = "target_object";
 
     transformStamped.transform.translation.x = msg->data[2] * 0.001;
-    transformStamped.transform.translation.y = msg->data[1] * -0.001;
-    transformStamped.transform.translation.z = msg->data[0] * -0.001;
+    transformStamped.transform.translation.y = msg->data[0] * -0.001;
+    transformStamped.transform.translation.z = msg->data[1] * 0.001;
 
     transformStamped.transform.rotation.x = 0.0;
     transformStamped.transform.rotation.y = 0.0;
