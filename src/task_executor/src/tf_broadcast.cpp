@@ -25,7 +25,7 @@ private:
 
     geometry_msgs::msg::TransformStamped transformStamped;
     transformStamped.header.stamp = this->now();
-    transformStamped.header.frame_id = "camera_link";  // カメラのTF名に合わせて
+    transformStamped.header.frame_id = "camera_color_frame";  // カメラのTF名に合わせて
     transformStamped.child_frame_id = "target_object";
 
     transformStamped.transform.translation.x = msg->data[2] * 0.001;
