@@ -14,7 +14,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
 
 
-
 # 実行ファイルのビルド
 add_executable(demo_arm_control src/demo_arm_control.cpp)
 ament_target_dependencies(
@@ -74,6 +73,16 @@ ament_target_dependencies(
   geometry_msgs
 )
 
+add_executable(ur5e_tf_arm_control src/ur5e_tf_arm_control.cpp)
+ament_target_dependencies(
+  ur5e_tf_arm_control
+  rclcpp
+  moveit_ros_planning_interface
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  geometry_msgs
+)
 
 install(TARGETS
   tf_broadcast
@@ -91,6 +100,7 @@ install(TARGETS
 
 install(TARGETS
   tf_arm_control
+  ur5e_tf_arm_control
   DESTINATION lib/${PROJECT_NAME}
 )
 
