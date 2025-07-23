@@ -36,10 +36,6 @@ int main(int argc, char **argv)
 
   rclcpp::sleep_for(std::chrono::seconds(1));  // 安定待ち
 
-  // === camera_link → gripper_base → target_object の静的TFをブロードキャスト ===
-  // ※この部分はlaunchファイルやコマンドラインで実行する必要あり。->tf_broadcast.cpp
-  // ros2 run tf2_ros static_transform_publisher -0.03 0.02 0 1.5708 -1.5708 0 gripper_base camera_link
-
   // === TFからtarget_object位置取得 ===
   geometry_msgs::msg::TransformStamped transformStamped;
   while (rclcpp::ok())
@@ -63,16 +59,39 @@ int main(int argc, char **argv)
               transformStamped.transform.translation.y,
               transformStamped.transform.translation.z);
 
-  // === アプローチ姿勢構築 ===
-  geometry_msgs::msg::Pose target_pose;
-  target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation;
-  target_pose.position.x = transformStamped.transform.translation.x - 0.28;
-  target_pose.position.y = transformStamped.transform.translation.y ;
-  target_pose.position.z = transformStamped.transform.translation.z ;
 
-  move_group_arm.setPoseTarget(target_pose);
-
+  
   moveit::planning_interface::MoveGroupInterface::Plan plan;
+
+  // --- 移動① (ZY平面での位置合わせ) ---
+  RCLCPP_INFO(node->get_logger(), "Executing Step 1: ZY Alignment");
+  geometry_msgs::msg::Pose step1_pose = move_group_arm.getCurrentPose().pose;
+  
+  // 目標のY座標とZ座標に合わせる (X座標は現在のまま)
+  step1_pose.position.y = transformStamped.transform.translation.y;
+  step1_pose.position.z = transformStamped.transform.translation.z;
+  
+  move_group_arm.setPoseTarget(step1_pose);
+  if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS)
+  {
+    move_group_arm.execute(plan);
+  }
+  else
+  {
+    RCLCPP_WARN(node->get_logger(), "Planning failed for Step 1.");
+  }
+
+  rclcpp::sleep_for(std::chrono::milliseconds(500)); // 安定待ち
+
+  // --- 移動② (X方向へのアプローチ) ---
+  RCLCPP_INFO(node->get_logger(), "Executing Step 2: X Approach");
+  geometry_msgs::msg::Pose step2_pose = move_group_arm.getCurrentPose().pose;
+
+  // 目標のX座標に合わせる (YとZ座標は現在のまま)
+  /
+  step2_pose.position.x = transformStamped.transform.translation.x - 0.15;
+
+  move_group_arm.setPoseTarget(step2_pose);
   if (move_group_arm.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS)
   {
     move_group_arm.execute(plan);
@@ -80,13 +99,14 @@ int main(int argc, char **argv)
   }
   else
   {
-    RCLCPP_WARN(node->get_logger(), "Planning to target failed.");
+    RCLCPP_WARN(node->get_logger(), "Planning failed for Step 2.");
   }
+
+
 
   rclcpp::sleep_for(std::chrono::seconds(1));
 
   // === 把持（必要に応じて） ===
-  // 正直これは趣味で追加したものなので適宜変更してください
   move_group_gripper.setNamedTarget("close");
   move_group_gripper.move();
 
