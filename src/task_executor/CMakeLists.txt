@@ -12,7 +12,7 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
-
+find_package(yaml-cpp REQUIRED)
 
 # 実行ファイルのビルド
 add_executable(demo_arm_control src/demo_arm_control.cpp)
@@ -51,7 +51,11 @@ add_executable(target_position_pub src/target_position_pub.cpp)
 ament_target_dependencies(
   target_position_pub
   rclcpp
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
   geometry_msgs
+  yaml-cpp
 )
 
 add_executable(tf_broadcast src/tf_broadcast.cpp)
@@ -82,7 +86,11 @@ ament_target_dependencies(
   tf2_ros
   tf2_geometry_msgs
   geometry_msgs
+  yaml-cpp
 )
+
+target_link_libraries(ur5e_tf_arm_control yaml-cpp)
+target_link_libraries(target_position_pub yaml-cpp)
 
 install(TARGETS
   tf_broadcast
