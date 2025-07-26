@@ -218,6 +218,17 @@ int main(int argc, char **argv)
   // planToTargetPose(move_group_arm, target_pose, plan, node->get_logger());
   planToTargetPoseCartesian(move_group_arm, target_pose, plan, node->get_logger());
 
+  // <<<<<<<引き動作>>>>>>>>>
+  local_offset = tf2::Vector3(0.0, 0.0, -0.05);
+  world_offset = T_ee.getBasis() * local_offset;
+  // <<<<<<<引き動作>>>>>>>>>
+  target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation; // 手先の姿勢を維持
+  target_pose.position = move_group_arm.getCurrentPose().pose.position;
+  target_pose.position.x = move_group_arm.getCurrentPose().pose.position.x + world_offset.x(); // 手先を引く
+  target_pose.position.y = move_group_arm.getCurrentPose().pose.position.y + world_offset.y();
+  target_pose.position.z = move_group_arm.getCurrentPose().pose.position.z + world_offset.z();
+  // planToTargetPose(move_group_arm, target_pose, plan, node->get_logger());
+  planToTargetPoseCartesian(move_group_arm, target_pose, plan, node->get_logger());
 
   // ↓　上下左右に移動して奥にアプローチする動作．果柄の位置のみ着目
 
