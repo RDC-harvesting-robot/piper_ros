@@ -181,6 +181,7 @@ int main(int argc, char **argv)
   tf2::Matrix3x3 R_base_to_ee = T_ee.getBasis().inverse();  // 回転行列の逆（base→ee）
   tf2::Vector3 relative_local = R_base_to_ee * relative_base;
   local_offset = tf2::Vector3(relative_local.x(), relative_local.y(), 0.0);
+  // local_offset = tf2::Vector3(relative_local.x(), relative_local.y(), relative_local.z());
   world_offset = T_ee.getBasis() * local_offset;
   // <<<<<<<アプローチ位置に移動>>>>>>>>> 
   target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation; // 手先の姿勢を維持
@@ -193,7 +194,7 @@ int main(int argc, char **argv)
   rclcpp::sleep_for(std::chrono::seconds(1));  // 安定待ち
 
   // <<<<<<<アプローチ動作>>>>>>>>> 
-  local_offset = tf2::Vector3(-0.02, 0.0, relative_local.z());  // 一番初めに見た瞬間の相対位置z
+  local_offset = tf2::Vector3(-0.02, 0.0, relative_local.z() - 0.005);  // 一番初めに見た瞬間の相対位置z
   world_offset = T_ee.getBasis() * local_offset;
   // <<<<<<<アプローチ動作>>>>>>>>> 
   target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation; // 手先の姿勢を維持
@@ -218,17 +219,17 @@ int main(int argc, char **argv)
   // planToTargetPose(move_group_arm, target_pose, plan, node->get_logger());
   planToTargetPoseCartesian(move_group_arm, target_pose, plan, node->get_logger());
 
-  // <<<<<<<引き動作>>>>>>>>>
-  local_offset = tf2::Vector3(0.0, 0.0, -0.05);
-  world_offset = T_ee.getBasis() * local_offset;
-  // <<<<<<<引き動作>>>>>>>>>
-  target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation; // 手先の姿勢を維持
-  target_pose.position = move_group_arm.getCurrentPose().pose.position;
-  target_pose.position.x = move_group_arm.getCurrentPose().pose.position.x + world_offset.x(); // 手先を引く
-  target_pose.position.y = move_group_arm.getCurrentPose().pose.position.y + world_offset.y();
-  target_pose.position.z = move_group_arm.getCurrentPose().pose.position.z + world_offset.z();
-  // planToTargetPose(move_group_arm, target_pose, plan, node->get_logger());
-  planToTargetPoseCartesian(move_group_arm, target_pose, plan, node->get_logger());
+  // // <<<<<<<引き動作>>>>>>>>>
+  // local_offset = tf2::Vector3(0.0, 0.0, -0.05);
+  // world_offset = T_ee.getBasis() * local_offset;
+  // // <<<<<<<引き動作>>>>>>>>>
+  // target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation; // 手先の姿勢を維持
+  // target_pose.position = move_group_arm.getCurrentPose().pose.position;
+  // target_pose.position.x = move_group_arm.getCurrentPose().pose.position.x + world_offset.x(); // 手先を引く
+  // target_pose.position.y = move_group_arm.getCurrentPose().pose.position.y + world_offset.y();
+  // target_pose.position.z = move_group_arm.getCurrentPose().pose.position.z + world_offset.z();
+  // // planToTargetPose(move_group_arm, target_pose, plan, node->get_logger());
+  // planToTargetPoseCartesian(move_group_arm, target_pose, plan, node->get_logger());
 
   // ↓　上下左右に移動して奥にアプローチする動作．果柄の位置のみ着目
 
@@ -259,7 +260,7 @@ int main(int argc, char **argv)
   // === 初期ポーズへ移動 ===
   // move_group_arm.setNamedTarget("servo_set");
   // move_group_arm.move();
-  // move_group_arm.setNamedTarget("harvest_set");
+  // move_group_arm.setNamedTarget("new_harvest_set");
   // move_group_arm.move();
 
   
