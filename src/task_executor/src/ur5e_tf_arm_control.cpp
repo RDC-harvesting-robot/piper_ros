@@ -194,7 +194,7 @@ int main(int argc, char **argv)
   rclcpp::sleep_for(std::chrono::seconds(1));  // 安定待ち
 
   // <<<<<<<アプローチ動作>>>>>>>>> 
-  local_offset = tf2::Vector3(-0.02, 0.0, relative_local.z() - 0.005);  // 一番初めに見た瞬間の相対位置z
+  local_offset = tf2::Vector3(-0.02, 0.0, relative_local.z());  // 一番初めに見た瞬間の相対位置z
   world_offset = T_ee.getBasis() * local_offset;
   // <<<<<<<アプローチ動作>>>>>>>>> 
   target_pose.orientation = move_group_arm.getCurrentPose().pose.orientation; // 手先の姿勢を維持
